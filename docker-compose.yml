@@ -1,0 +1,75 @@
+version: "3.9"
+   
+services:
+  db:
+    image: postgres
+    container_name: db
+    hostname: db
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+
+  redis:
+    image: redis
+    container_name: redis
+    hostname: redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2G
+  
+#  loadtest:
+#    image: node:16-buster-slim
+#    container_name: loadtest
+#    command: bash -c "npm install -g npm@7.24.1 && npm i -g loadtest && tail -f /dev/null"
+#    networks: 
+#      - default
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1'
+#          memory: 2G
+
+  web:
+    build: .
+    container_name: django
+    hostname: django
+    working_dir: /code/main
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./web:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    env_file:
+      - .env
+
