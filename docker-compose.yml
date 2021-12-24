@@ -50,8 +50,8 @@ services:
     build: .
     container_name: django
     hostname: django
-    working_dir: /code/main
-    command: python manage.py runserver 0.0.0.0:8000
+    working_dir: /code/ecommerce
+    command: python manage.py runserver 0.0.0.0:8000 #tail -f /dev/null
     volumes:
       - ./web:/code
     ports:
